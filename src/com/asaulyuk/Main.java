@@ -1,62 +1,80 @@
 package com.asaulyuk;
 
+import org.apache.commons.graph.Edge;
 import org.apache.commons.graph.MutableGraph;
 import org.apache.commons.graph.domain.basic.UndirectedGraphImpl;
 
 import java.util.List;
 
 public class Main {
+    private static final Integer MATRIX_SIZE_X = 9;
+    private static final Integer MATRIX_SIZE_Y = 9;
 
     public static void main(String[] args) {
 
         MutableGraph graph = new UndirectedGraphImpl();
-        Vershina v1 = new Vershina(1,1);
-        Vershina v2 = new Vershina(1,2);
-        Vershina v3 = new Vershina(2,1);
-        Vershina v4 = new Vershina(2,2);
+        Vershina[][] matrix = new Vershina[MATRIX_SIZE_X][MATRIX_SIZE_Y];
 
-        for (int x = 1; x <= 9; x++) {
-            for (int y = 1; y <= 9; y++) {
-                graph.addVertex(new Vershina(x,y));
+        for (int x = 0; x < MATRIX_SIZE_X; x=x+1) {
+            for (int y = 0; y < MATRIX_SIZE_Y; y=y+1) {
+                Vershina currentVershina = new Vershina(x,y);
+                matrix[x][y]= currentVershina;
+                graph.addVertex(currentVershina);
             }
         }
 
-        graph.addVertex(v1);
-        graph.addVertex(v2);
-        graph.addVertex(v3);
-        graph.addVertex(v4);
+        for (int x = 0; x < MATRIX_SIZE_X; x=x+1) {
+            for (int y = 0; y < MATRIX_SIZE_Y; y=y+1) {
+                if( y < MATRIX_SIZE_Y - 1) {
+                    Rebro downRebro = new Rebro(String.valueOf(x).concat(" ").concat(String.valueOf(y+1)));
+                    graph.addEdge(downRebro);
+                    graph.connect(downRebro, matrix[x][y]);
+                    graph.connect(downRebro, matrix[x][y + 1]);
+                }
 
-        Rebro rebroH112 = new Rebro("AB1");
-        graph.addEdge(rebroH112);
-        graph.connect(rebroH112, v1);
-        graph.connect(rebroH112, v2);
-
-        Rebro rebroH212 = new Rebro("AB2");
-        graph.addEdge(rebroH212);
-        graph.connect(rebroH212, v3);
-        graph.connect(rebroH212, v4);
-
-        Rebro rebroV112 = new Rebro("A12");
-        Rebro rebroV212 = new Rebro("B12");
-        graph.addEdge(rebroV112);
-        graph.addEdge(rebroV212);
-        graph.connect(rebroV112, v1);
-        graph.connect(rebroV112, v3);
-        graph.connect(rebroV212, v2);
-        graph.connect(rebroV212, v4);
-
-//        graph.disconnect();
-
-
-        for (Object r: graph.getEdges(v2)) {
-            Rebro rebro = (Rebro) r;
-            System.out.println(rebro.getAddress() +" :"+ rebro.getValid());
+                if (x < MATRIX_SIZE_X -1) {
+                    Rebro rightRebro = new Rebro(String.valueOf(x + 1).concat(" ").concat(String.valueOf(y+1)));
+                    graph.addEdge(rightRebro);
+                    graph.connect(rightRebro, matrix[x][y]);
+                    graph.connect(rightRebro, matrix[x + 1][y]);
+                }
+            }
         }
+
+
+        for(Object i: graph.getVertices()) {
+            Vershina vershina = (Vershina) i;
+            if (vershina.getY().equals(5)) {
+                System.out.println("Vershina: x"+vershina.getX().toString() + " y:"+vershina.getY().toString());
+                for (Object r: graph.getEdges(vershina)) {
+                    graph.getVertices((Edge) r).forEach(v->{
+                        Vershina vershina1 = (Vershina) v;
+                                System.out.println("Connect: x:"+vershina1.getX() + " ----- y:"+vershina1.getY());
+                            }
+
+                    );
+
+                    System.out.println(((Rebro)r).getAddress());
+
+                }
+                System.out.println("");
+            }
+
+        }
+        System.out.println("Vershin: " + graph.getVertices().size() + " Reber:"+graph.getEdges().size());
+
 
 	// write your code here
     }
 
-    public void moveLeft(List<Moving> movingList) {
-        movingList.forEach(moving -> moving.moveLeft());
+    public static Vershina getVershinaByXandY(Integer x, Integer y, MutableGraph graph){
+        for(Vershina v: (List<Vershina>)graph.getVertices()) {
+            if (v.getX().equals(x) && v.getY().equals(y)) {
+                return v;
+            }
+        }
+
+        return null;
     }
+
 }

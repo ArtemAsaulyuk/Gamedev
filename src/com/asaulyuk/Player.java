@@ -8,6 +8,7 @@ public class Player implements Moving {
     Color color;
     Integer x;
     Integer y;
+    Vershina coordinati;
 
     public Player(String name, Color color) {
         this.name = name;
