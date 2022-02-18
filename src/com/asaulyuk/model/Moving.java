@@ -1,4 +1,4 @@
-package com.asaulyuk;
+package com.asaulyuk.model;
 
 public interface Moving {
     Integer moveCount = 0;
