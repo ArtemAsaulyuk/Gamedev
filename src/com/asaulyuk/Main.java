@@ -1,5 +1,6 @@
 package com.asaulyuk;
 
+import com.asaulyuk.model.Placement;
 import com.asaulyuk.model.QuoridorGameLogic;
 import com.asaulyuk.model.Rebro;
 import com.asaulyuk.model.Vershina;
@@ -14,38 +15,18 @@ public class Main {
     public static void main(String[] args) {
         QuoridorGameLogic gameLogic = new QuoridorGameLogic();
 
-        Boolean result = gameLogic.movePlayerToXY("black", 5,8);
+        Boolean wallResult = gameLogic.placeWall(3,0, Placement.Horizontal);
+        System.out.println("Wall result:" + wallResult);
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 5,0));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 5,1));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 4,1));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 4,0));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 3,1));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 3,0));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 2,1));
+        System.out.println("Move result:" + gameLogic.movePlayerToXY("white", 2,0));
 
-        System.out.println("Move result:" + result);
 
-//
-//
-//
-//
-//
-//        for(Object i: gameLogic.getGraph().getVertices()) {
-//            Vershina vershina = (Vershina) i;
-//            if (vershina.getY().equals(5)) {
-//                System.out.println("Vershina: x"+vershina.getX().toString() + " y:"+vershina.getY().toString());
-//                for (Object r: gameLogic.getGraph().getEdges(vershina)) {
-//                    gameLogic.getGraph().getVertices((Edge) r).forEach(v->{
-//                        Vershina vershina1 = (Vershina) v;
-//                                System.out.println("Connect: x:"+vershina1.getX() + " ----- y:"+vershina1.getY());
-//                            }
-//
-//                    );
-//
-//                    System.out.println(((Rebro)r).getAddress());
-//
-//                }
-//                System.out.println("");
-//            }
-//
-//        }
-//        System.out.println("Vershin: " + gameLogic.getGraph().getVertices().size() + " Reber:"+gameLogic.getGraph().getEdges().size());
-//
-
-	// write your code here
     }
 
     public static Vershina getVershinaByXandY(Integer x, Integer y, MutableGraph graph){
