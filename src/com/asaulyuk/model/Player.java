@@ -5,6 +5,7 @@ import java.awt.*;
 public class Player implements Moving {
     public String name;
     public Integer moveCount;
+    public Boolean isUserPlayer = true;
     Color color;
     Integer x;
     Integer y;

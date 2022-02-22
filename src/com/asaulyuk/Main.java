@@ -2,18 +2,32 @@ package com.asaulyuk;
 
 import com.asaulyuk.model.Placement;
 import com.asaulyuk.model.QuoridorGameLogic;
-import com.asaulyuk.model.Rebro;
 import com.asaulyuk.model.Vershina;
-import org.apache.commons.graph.Edge;
 import org.apache.commons.graph.MutableGraph;
-import org.apache.commons.graph.domain.basic.UndirectedGraphImpl;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
         QuoridorGameLogic gameLogic = new QuoridorGameLogic();
+        Scanner s = new Scanner(System.in);
+        Integer personCount = 0;
+        while(personCount<1 || personCount>2) {
+            System.out.println("Chose mode:");
+            System.out.println("1 - for Single user and PC");
+            System.out.println("2 - for two users");
+            personCount = s.nextInt();
+        }
+        gameLogic.InitializeGame(personCount);
+
+        String choseColor="";
+        while(!gameLogic.startGame(choseColor)) {
+            System.out.println("Choose color 'white' or 'black':");
+             choseColor = s.next();
+        }
+
 
         Boolean wallResult = gameLogic.placeWall(3,0, Placement.Horizontal);
         System.out.println("Wall result:" + wallResult);

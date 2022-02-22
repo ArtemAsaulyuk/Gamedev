@@ -1,10 +1,13 @@
 package com.asaulyuk.model;
 
+import org.apache.commons.graph.Edge;
 import org.apache.commons.graph.MutableGraph;
 import org.apache.commons.graph.domain.basic.UndirectedGraphImpl;
 
-import java.awt.*;
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -22,14 +25,19 @@ public class QuoridorGameLogic {
 
     Placement[][] wallMatrix;
 
+    Integer personCount = 0;
+
+    Player currentPlayer;
+
 
     public QuoridorGameLogic() {
         whitePlayer = new Player("Player 1", Color.WHITE);
         blackPlayer = new Player("Player 2", Color.BLACK);
-        startGame();
+
     }
 
-    public void startGame() {
+    public void InitializeGame(Integer personCount) {
+        this.personCount=personCount;
         initializeAll();
         whitePlayer.x = 4;
         whitePlayer.y = 0;
@@ -40,6 +48,26 @@ public class QuoridorGameLogic {
         blackPlayer.y = 8;
         blackPlayer.coordinati = getVershinaByXY(blackPlayer.getX(), blackPlayer.getY());
         blackPlayer.moveCount =0;
+
+    }
+
+    public Boolean startGame(String color) {
+        if (color.equalsIgnoreCase("black")) {
+            currentPlayer = blackPlayer;
+        } else if (color.equalsIgnoreCase("white")) {
+            currentPlayer = whitePlayer;
+        } else {
+            return false;
+        }
+
+        if (personCount==1) {
+            if (currentPlayer.equals(blackPlayer)) {
+                whitePlayer.isUserPlayer = false;
+            } else {
+                blackPlayer.isUserPlayer = false;
+            }
+        }
+        return true;
 
     }
 
@@ -55,12 +83,7 @@ public class QuoridorGameLogic {
 
         Vershina moveTo = null;
         moveTo = matrixVershin[x][y];
-//        for (Object v: graph.getVertices()) {
-//            Vershina vershina = (Vershina) v;
-//            if ((vershina.getX().equals(x)) && vershina.getY().equals(y)) {
-//                moveTo = vershina;
-//            }
-//        }
+
         if (moveTo == null) {
 //            "Error"
             return false;
@@ -68,6 +91,71 @@ public class QuoridorGameLogic {
 
         return movePlayer(movePlayer, moveTo);
 
+    }
+
+    public Boolean jump(Player jumper, Integer x, Integer y) {
+        Player oponent = getOtherPlayer(jumper);
+//      check if we are not devided from oponent
+        Set<Rebro> ourRebra = graph.getEdges(jumper.coordinati);
+        Set<Rebro> oponentRebra = graph.getEdges(oponent.coordinati);
+
+        Set<Rebro> intersection = ourRebra;
+        intersection.retainAll(oponentRebra);
+
+        if (!anyRebroIsValid(intersection)) {
+            // No connection, we can't jump
+            return false;
+        }
+
+//      Check is available behind oponent
+        Placement placementOn;
+        if (jumper.x.equals(oponent.x)) {
+            placementOn = Placement.Vertical;
+        } else {
+            placementOn = Placement.Horizontal;
+        }
+
+        Rebro behindOponent = null;
+        Set<Rebro> noIntersectRebra = oponentRebra;
+        noIntersectRebra.removeAll(intersection);
+        for(Rebro r:noIntersectRebra) {
+            if (r.getValid() && r.placement.equals(placementOn)) {
+                behindOponent = r;
+            }
+        }
+        if (behindOponent==null) {
+            // No rebro behind.
+//            Check leftRight move
+        } else {
+            //Move to point;
+
+            for(Object v: graph.getVertices(behindOponent)) {
+                Vershina vershina = (Vershina) v;
+                if (vershina.getX().equals(x) && vershina.getY().equals(y)) {
+                    jumper.coordinati=vershina;
+                }
+
+            }
+        }
+        switchPlayer();
+        return true;
+    }
+
+    private Player getOtherPlayer(Player player) {
+        if (player.equals(blackPlayer)) {
+            return whitePlayer;
+        } else {
+            return blackPlayer;
+        }
+    }
+
+    private Boolean anyRebroIsValid(Set<Rebro> rebra) {
+        for(Rebro r: rebra) {
+            if (r.getValid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Boolean movePlayer(Player player, Vershina where) {
@@ -78,6 +166,7 @@ public class QuoridorGameLogic {
         player.coordinati = where;
         player.x = where.getX();;
         player.y = where.getY();
+        switchPlayer();
         return true;
     }
 
@@ -97,6 +186,7 @@ public class QuoridorGameLogic {
             if (IsWallValid(x,y,placement)) {
                 wallMatrix[x][y] = placement;
                 updateGraphWithWall(x,y,placement);
+                switchPlayer();
                 return true;
             } else {
                 return false;
@@ -224,5 +314,14 @@ public class QuoridorGameLogic {
 
     public Vershina[][] getMatrixVershin() {
         return matrixVershin;
+    }
+
+    public void switchPlayer() {
+        currentPlayer.moveCount++;
+        if (currentPlayer.equals(blackPlayer)) {
+            currentPlayer = whitePlayer;
+        } else {
+            currentPlayer = blackPlayer;
+        }
     }
 }
