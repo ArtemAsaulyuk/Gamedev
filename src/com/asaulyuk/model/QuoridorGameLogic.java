@@ -1,13 +1,10 @@
 package com.asaulyuk.model;
 
-import org.apache.commons.graph.Edge;
 import org.apache.commons.graph.MutableGraph;
 import org.apache.commons.graph.domain.basic.UndirectedGraphImpl;
 
-import java.awt.Color;
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -29,14 +26,20 @@ public class QuoridorGameLogic {
 
     Player currentPlayer;
 
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
+    boolean gameStarted;
+
 
     public QuoridorGameLogic() {
-        whitePlayer = new Player("Player 1", Color.WHITE);
-        blackPlayer = new Player("Player 2", Color.BLACK);
+        whitePlayer = new Player("Player 1", Player.PlayerColor.WHITE);
+        blackPlayer = new Player("Player 2", Player.PlayerColor.BLACK);
 
     }
 
-    public void InitializeGame(Integer personCount) {
+    public void initializeGame(Integer personCount) {
         this.personCount=personCount;
         initializeAll();
         whitePlayer.x = 4;
@@ -52,6 +55,7 @@ public class QuoridorGameLogic {
     }
 
     public Boolean startGame(String color) {
+
         if (color.equalsIgnoreCase("black")) {
             currentPlayer = blackPlayer;
         } else if (color.equalsIgnoreCase("white")) {
@@ -67,7 +71,22 @@ public class QuoridorGameLogic {
                 blackPlayer.isUserPlayer = false;
             }
         }
+        gameStarted=true;
         return true;
+
+    }
+
+
+    public Boolean move(Integer x, Integer y) {
+        Vershina moveTo = null;
+        moveTo = matrixVershin[x][y];
+
+        if (moveTo == null) {
+            //            "Error"
+            return false;
+        }
+
+        return movePlayer(currentPlayer, moveTo);
 
     }
 
@@ -93,7 +112,8 @@ public class QuoridorGameLogic {
 
     }
 
-    public Boolean jump(Player jumper, Integer x, Integer y) {
+    public Boolean jump(Integer x, Integer y) {
+        Player jumper = currentPlayer;
         Player oponent = getOtherPlayer(jumper);
 //      check if we are not devided from oponent
         Set<Rebro> ourRebra = graph.getEdges(jumper.coordinati);
@@ -171,6 +191,9 @@ public class QuoridorGameLogic {
     }
 
     private Boolean checkMove(Player player, Vershina where) {
+        if (getOtherPlayer(player).coordinati.equals(where)) {
+            return false;
+        }
         Set<Rebro> rebra = graph.getEdges(player.coordinati);
         for (Rebro r: rebra) {
             if ((r.getValid()) && (graph.getVertices(r).contains(where))) {
@@ -316,7 +339,7 @@ public class QuoridorGameLogic {
         return matrixVershin;
     }
 
-    public void switchPlayer() {
+    private void switchPlayer() {
         currentPlayer.moveCount++;
         if (currentPlayer.equals(blackPlayer)) {
             currentPlayer = whitePlayer;
@@ -324,4 +347,13 @@ public class QuoridorGameLogic {
             currentPlayer = blackPlayer;
         }
     }
+
+    public String getCurrentPlayerColor() {
+        return currentPlayer.equals(blackPlayer) ? "black"+blackPlayer.getX().toString()+blackPlayer.getY().toString() : "white"+whitePlayer.getX().toString()+whitePlayer.getY().toString();
+    }
+
+    public Placement[][] getWallMatrix() {
+        return wallMatrix;
+    }
+
 }

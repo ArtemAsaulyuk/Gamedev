@@ -1,19 +1,22 @@
 package com.asaulyuk.model;
 
-import java.awt.*;
-
 public class Player implements Moving {
+
+    public enum PlayerColor {
+        BLACK,
+        WHITE
+    }
     public String name;
     public Integer moveCount;
     public Boolean isUserPlayer = true;
-    Color color;
+    public PlayerColor playerColor;
     Integer x;
     Integer y;
     Vershina coordinati;
 
-    public Player(String name, Color color) {
+    public Player(String name, PlayerColor playerColor) {
         this.name = name;
-        this.color = color;
+        this.playerColor = playerColor;
         this.moveCount=0;
     }
 
