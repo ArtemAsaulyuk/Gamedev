@@ -9,8 +9,8 @@ import java.util.Set;
 
 
 public class QuoridorGameLogic {
-    private static final Integer MATRIX_SIZE_X = 9;
-    private static final Integer MATRIX_SIZE_Y = 9;
+    public static final Integer MATRIX_SIZE_X = 9;
+    public static final Integer MATRIX_SIZE_Y = 9;
 
 
     Player blackPlayer;
@@ -146,6 +146,7 @@ public class QuoridorGameLogic {
         if (behindOponent==null) {
             // No rebro behind.
 //            Check leftRight move
+            return false;
         } else {
             //Move to point;
 
@@ -153,12 +154,16 @@ public class QuoridorGameLogic {
                 Vershina vershina = (Vershina) v;
                 if (vershina.getX().equals(x) && vershina.getY().equals(y)) {
                     jumper.coordinati=vershina;
+                    jumper.x = vershina.getX();
+                    jumper.y = vershina.getY();
+                    switchPlayer();
+                    return true;
                 }
 
             }
         }
-        switchPlayer();
-        return true;
+//        switchPlayer();
+        return false;
     }
 
     private Player getOtherPlayer(Player player) {
@@ -356,4 +361,7 @@ public class QuoridorGameLogic {
         return wallMatrix;
     }
 
+    public Player getCurrentPlayer() {
+        return currentPlayer;
+    }
 }
