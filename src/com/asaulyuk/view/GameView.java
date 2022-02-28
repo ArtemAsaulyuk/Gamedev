@@ -6,6 +6,7 @@ import com.asaulyuk.model.QuoridorGameLogic;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -32,25 +33,43 @@ public class GameView implements MouseListener {
     public void initialize(){
         frame = new JFrame();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(new Dimension(600,600));
+        frame.setSize(new Dimension(480,550));
+        frame.setResizable(false);
         JPanel topPanel = new JPanel(new GridLayout(1,5));
         JButton starGameButton = new JButton("Start Game");
         starGameButton.setBackground(Color.BLUE);
         starGameButton.addActionListener(gameController);
         starGameButton.setActionCommand(GameController.START_GAME);
-        topPanel.add(new JLabel("White:"));
+        topPanel.add(new JLabel("Red:"));
         whiteInfo = new JLabel("info1");
         topPanel.add(whiteInfo);
         topPanel.add(starGameButton);
-        topPanel.add(new JLabel("Black"));
+        topPanel.add(new JLabel("Green"));
         blackInfo = new JLabel("info2");
         topPanel.add(blackInfo);
         frame.setTitle("Quoridor by Asaulyuk");
         this.buildField();
-        frame.add(topPanel, BorderLayout.PAGE_START);
+
+//        frame.add(topPanel, BorderLayout.PAGE_START);
+        JPanel pageStartPanel = new JPanel();
+        pageStartPanel.setLayout(new GridLayout(2,1));
+        JPanel topCoord = new JPanel();
+        topCoord.setLayout(new GridLayout(1,9));
+        for (int i=65; i< 65 + QuoridorGameLogic.MATRIX_SIZE_X; i++) {
+            topCoord.add(new JLabel(Character.toString((char)i), SwingConstants.CENTER));
+        }
+        pageStartPanel.add(topPanel);
+        pageStartPanel.add(topCoord);
+
+        frame.add(pageStartPanel, BorderLayout.PAGE_START);
         fieldPanel.addMouseListener(this);
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
-        frame.add(new JPanel(), BorderLayout.WEST);
+        JPanel leftCoord = new JPanel();
+        leftCoord.setLayout(new GridLayout(QuoridorGameLogic.MATRIX_SIZE_Y, 1));
+        for(Integer i=1; i< QuoridorGameLogic.MATRIX_SIZE_Y+1; i++) {
+            leftCoord.add(new JLabel(" "+i.toString(), SwingConstants.CENTER));
+        }
+        frame.add(leftCoord, BorderLayout.WEST);
         frame.add(fieldPanel );
         frame.setVisible(true);
 
@@ -77,13 +96,14 @@ public class GameView implements MouseListener {
 
     public void refreshInfo() {
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
+        fieldPanel.setWallMatrix(gameLogic.getWallMatrix());
         whiteInfo.setText("X="+gameLogic.getWhitePlayer().getX()+" Y="+gameLogic.getWhitePlayer().getY());
         blackInfo.setText("X="+gameLogic.getBlackPlayer().getX()+" Y="+gameLogic.getBlackPlayer().getY());
         this.fieldPanel.repaint();
     }
 
     public int choseColor() {
-        String[] options = {"White","Black"};
+        String[] options = {"Red","Green"};
         return JOptionPane.showOptionDialog(frame,"Chose your color","Chose color",DEFAULT_OPTION, QUESTION_MESSAGE, null, options, 0);
     }
 
@@ -96,7 +116,17 @@ public class GameView implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         System.out.println(e.getX() + " " + e.getY());
+        ViewSupportData data = fieldPanel.calculateWallEdgeCoordinates(e.getX(), e.getY());
+        System.out.println(data.selectedType+" x:"+data.x+" y:"+data.y);
 
+        ActionEvent event;
+        if (data.selectedType.equals(ViewSupportData.BoxType.CELL)) {
+            event = new ActionEvent(data, ActionEvent.ACTION_FIRST, GameController.MOVE_COMMAND);
+            gameController.actionPerformed(event);
+        } else {
+            event = new ActionEvent(data, ActionEvent.ACTION_FIRST, GameController.WALL_COMMAND);
+            gameController.actionPerformed(event);
+        }
 
 
     }

@@ -72,6 +72,7 @@ public class QuoridorGameLogic {
             }
         }
         gameStarted=true;
+        System.out.println("Game begins, first move is for:"+getCurrentPlayerColor());
         return true;
 
     }
@@ -86,8 +87,18 @@ public class QuoridorGameLogic {
             return false;
         }
 
-        return movePlayer(currentPlayer, moveTo);
+        Boolean moveResult = movePlayer(currentPlayer, moveTo);
 
+        return moveResult;
+
+    }
+
+    public boolean moveOrJump(Integer x, Integer y) {
+        Boolean moveSuccess = move(x,y);
+        if (!moveSuccess) {
+                moveSuccess = jump(x,y);
+        }
+        return moveSuccess;
     }
 
     public Boolean movePlayerToXY(String color, Integer x, Integer y) {
@@ -115,6 +126,10 @@ public class QuoridorGameLogic {
     public Boolean jump(Integer x, Integer y) {
         Player jumper = currentPlayer;
         Player oponent = getOtherPlayer(jumper);
+//      check if we not try to jump onto oponent
+        if ((oponent.x==x) && (oponent.y==y)) {
+            return false;
+        }
 //      check if we are not devided from oponent
         Set<Rebro> ourRebra = graph.getEdges(jumper.coordinati);
         Set<Rebro> oponentRebra = graph.getEdges(oponent.coordinati);
@@ -210,16 +225,15 @@ public class QuoridorGameLogic {
     }
 
     public Boolean placeWall(Integer x, Integer y, Placement placement ) {
-        if (wallMatrix[x][y] == null) {
-            if (IsWallValid(x,y,placement)) {
+
+// checks: must place 2 walls, place is available, path is possible
+        if (IsWallValid(x,y,placement)) {
                 wallMatrix[x][y] = placement;
                 updateGraphWithWall(x,y,placement);
                 switchPlayer();
                 return true;
-            } else {
-                return false;
+//
 //              Stavit nelzja, Blokirovka prohoda
-            }
 
         } else {
 //          Mesto Zanjato
@@ -270,8 +284,65 @@ public class QuoridorGameLogic {
     }
 
     private Boolean IsWallValid(Integer x, Integer y, Placement placement) {
-        return true;
+        if ((x >= MATRIX_SIZE_X-1) || (y>= MATRIX_SIZE_Y-1)) {
+            return false;
+        }
+        if (wallMatrix[x][y]==null) {
+            if (placement.equals(Placement.Horizontal)) {
+                return checkLeftRightPlacement(x,y);
+            }
+            if (placement.equals(Placement.Vertical)) {
+                return checkUpDownPlacement(x,y);
+
+            }
+        } else {
+            return false;
+        }
+        return false;
     }
+
+    private Boolean checkUpDownPlacement(Integer x, Integer y) {
+        boolean result = false;
+
+        if (y>0) {
+            if ((wallMatrix[x][y-1]==null) || (wallMatrix[x][y-1].equals(Placement.Horizontal))) {
+                result = true;
+            }
+        } else {
+            result = true;
+        }
+        if ((result) && (y<MATRIX_SIZE_Y-2)) {
+            result = false;
+            if ((wallMatrix[x][y+1]==null) || (wallMatrix[x][y+1].equals(Placement.Horizontal))) {
+                result = true;
+            }
+
+        }
+
+        return result;
+    }
+
+    private boolean checkLeftRightPlacement(Integer x, Integer y) {
+        boolean result = false;
+
+        if (x>0) {
+            if ((wallMatrix[x-1][y]==null) || (wallMatrix[x-1][y].equals(Placement.Vertical))) {
+                result = true;
+            }
+        } else {
+            result = true;
+        }
+        if ((result) && (x<MATRIX_SIZE_X-2)) {
+            result = false;
+            if ((wallMatrix[x+1][y]==null) || (wallMatrix[x+1][y].equals(Placement.Vertical))) {
+                result = true;
+            }
+
+        }
+
+        return result;
+    }
+
 
     private Vershina getVershinaByXY(Integer x, Integer y) {
         Set<Vershina> allVershina = graph.getVertices();
