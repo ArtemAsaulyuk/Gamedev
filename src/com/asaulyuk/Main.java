@@ -41,7 +41,7 @@ public class Main {
 
         gameView.initialize();
 
-        System.out.println(gameLogic.getCurrentPlayerColor());
+        //System.out.println(gameLogic.getCurrentPlayerColor());
         Boolean wallResult = gameLogic.placeWall(3,0, Placement.Horizontal);
         gameView.refreshInfo();
         Thread.sleep(200);

@@ -19,4 +19,9 @@ public class Vershina implements Vertex {
     public Integer getY() {
         return y;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Vershina && ((Vershina) obj).x.equals(this.x) && ((Vershina) obj).y.equals(y);
+    }
 }

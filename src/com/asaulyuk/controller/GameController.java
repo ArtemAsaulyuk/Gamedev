@@ -15,9 +15,11 @@ public class GameController implements ActionListener{
     public static final String WALL_COMMAND = "wall";
     private QuoridorGameLogic gameLogic;
     private GameView gameView;
+    private PcPlayerController pcPlayerController;
 
     public GameController(QuoridorGameLogic gameLogic, GameView gameView) {
         this.gameLogic = gameLogic;
+        pcPlayerController = new PcPlayerController(gameLogic);
         this.gameView = gameView;
     }
 
@@ -30,21 +32,45 @@ public class GameController implements ActionListener{
 
             }
         }
+        boolean commandResult = false;
         if (e.getActionCommand().equals(MOVE_COMMAND)) {
             ViewSupportData data = (ViewSupportData) e.getSource();
-            gameLogic.moveOrJump(data.x, data.y);
+            commandResult = gameLogic.moveOrJump(data.x, data.y);
         }
         if (e.getActionCommand().equals(WALL_COMMAND)) {
             ViewSupportData data = (ViewSupportData) e.getSource();
             if (data.selectedType.equals(ViewSupportData.BoxType.WALL_HORIZONTAL)) {
-                gameLogic.placeWall(data.x, data.y, Placement.Horizontal);
+                commandResult= gameLogic.placeWall(data.x, data.y, Placement.Horizontal);
             } else {
-                gameLogic.placeWall(data.x, data.y, Placement.Vertical);
+                commandResult = gameLogic.placeWall(data.x, data.y, Placement.Vertical);
             }
         }
         gameView.refreshInfo();
+        if (gameLogic.getWinner()!=null) {
+            gameView.congratulateWinner(gameLogic.getWinner().name);
+        }
 
-        System.out.println(e.paramString());
+
+/*
+        if (!gameLogic.getCurrentPlayer().isUserPlayer) {
+            pcPlayerController.doNextMove();
+            gameView.refreshInfo();
+            if (gameLogic.getWinner()!=null) {
+                gameView.congratulateWinner(gameLogic.getWinner().name);
+            }
+
+        }
+*/
+        while (!gameLogic.getCurrentPlayer().isUserPlayer && gameLogic.isGameStarted()) {
+            pcPlayerController.doNextMove();
+            gameView.refreshInfo();
+            if (gameLogic.getWinner()!=null) {
+                gameView.congratulateWinner(gameLogic.getWinner().name);
+            }
+
+        }
+
+        //System.out.println(e.paramString());
     }
 
     private boolean processStartGame() {
@@ -60,14 +86,18 @@ public class GameController implements ActionListener{
         int choseMode = gameView.choseMode();
         if (choseMode == 0 ) {
             gameLogic.initializeGame(1);
+            gameLogic.getWhitePlayer().name="Red";
+            gameLogic.getBlackPlayer().name="Green";
             gameLogic.startGame(firstColor);
         } else if (choseMode ==1 ) {
             gameLogic.initializeGame(2);
+            gameLogic.getWhitePlayer().name="Red";
+            gameLogic.getBlackPlayer().name="Green";
             gameLogic.startGame(firstColor);
         } else return true;
 
 
-        System.out.println(choseColor);
+        //System.out.println(choseColor);
         return false;
     }
 

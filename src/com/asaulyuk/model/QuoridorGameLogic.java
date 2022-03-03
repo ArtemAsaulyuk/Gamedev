@@ -11,6 +11,7 @@ import java.util.Set;
 public class QuoridorGameLogic {
     public static final Integer MATRIX_SIZE_X = 9;
     public static final Integer MATRIX_SIZE_Y = 9;
+    public static final Integer AVAILABLE_WALL_COUNT = 10;
 
 
     Player blackPlayer;
@@ -36,7 +37,7 @@ public class QuoridorGameLogic {
     public QuoridorGameLogic() {
         whitePlayer = new Player("Player 1", Player.PlayerColor.WHITE);
         blackPlayer = new Player("Player 2", Player.PlayerColor.BLACK);
-
+        gameStarted=false;
     }
 
     public void initializeGame(Integer personCount) {
@@ -44,13 +45,18 @@ public class QuoridorGameLogic {
         initializeAll();
         whitePlayer.x = 4;
         whitePlayer.y = 0;
+        whitePlayer.wallCountLeft=AVAILABLE_WALL_COUNT;
         whitePlayer.coordinati = getVershinaByXY(whitePlayer.getX(),whitePlayer.getY());
         whitePlayer.moveCount = 0;
+        whitePlayer.isUserPlayer=true;
 
         blackPlayer.x = 4;
-        blackPlayer.y = 8;
+        blackPlayer.y = MATRIX_SIZE_Y-1;
         blackPlayer.coordinati = getVershinaByXY(blackPlayer.getX(), blackPlayer.getY());
         blackPlayer.moveCount =0;
+        blackPlayer.wallCountLeft=AVAILABLE_WALL_COUNT;
+        blackPlayer.isUserPlayer=true;
+        gameStarted=false;
 
     }
 
@@ -67,8 +73,11 @@ public class QuoridorGameLogic {
         if (personCount==1) {
             if (currentPlayer.equals(blackPlayer)) {
                 whitePlayer.isUserPlayer = false;
+                blackPlayer.isUserPlayer = true;
+
             } else {
                 blackPlayer.isUserPlayer = false;
+                whitePlayer.isUserPlayer = true;
             }
         }
         gameStarted=true;
@@ -79,7 +88,10 @@ public class QuoridorGameLogic {
 
 
     public Boolean move(Integer x, Integer y) {
-        Vershina moveTo = null;
+        if (!isGameStarted() || !coordsAreInRangeForMove(x,y)) {
+            return false;
+        }
+        Vershina moveTo;
         moveTo = matrixVershin[x][y];
 
         if (moveTo == null) {
@@ -87,13 +99,18 @@ public class QuoridorGameLogic {
             return false;
         }
 
-        Boolean moveResult = movePlayer(currentPlayer, moveTo);
-
-        return moveResult;
+        return movePlayer(currentPlayer, moveTo);
 
     }
 
+    private boolean coordsAreInRangeForMove(Integer x, Integer y) {
+        return x>=0 && x<MATRIX_SIZE_X && y>=0 && y<MATRIX_SIZE_Y;
+    }
+
     public boolean moveOrJump(Integer x, Integer y) {
+        if (!isGameStarted()) {
+            return false;
+        }
         Boolean moveSuccess = move(x,y);
         if (!moveSuccess) {
                 moveSuccess = jump(x,y);
@@ -101,84 +118,88 @@ public class QuoridorGameLogic {
         return moveSuccess;
     }
 
-    public Boolean movePlayerToXY(String color, Integer x, Integer y) {
-        Player movePlayer;
-        if (color.equalsIgnoreCase("black")) {
-            movePlayer = blackPlayer;
-        } else if (color.equalsIgnoreCase("white")) {
-            movePlayer = whitePlayer;
-        } else {
-            return false;
-        }
-
-        Vershina moveTo = null;
-        moveTo = matrixVershin[x][y];
-
-        if (moveTo == null) {
-//            "Error"
-            return false;
-        }
-
-        return movePlayer(movePlayer, moveTo);
-
-    }
 
     public Boolean jump(Integer x, Integer y) {
+        if (!isGameStarted()) {
+            return false;
+        }
         Player jumper = currentPlayer;
         Player oponent = getOtherPlayer(jumper);
 //      check if we not try to jump onto oponent
-        if ((oponent.x==x) && (oponent.y==y)) {
+        if ((oponent.x.equals(x)) && (oponent.y.equals(y))) {
             return false;
         }
-//      check if we are not devided from oponent
-        Set<Rebro> ourRebra = graph.getEdges(jumper.coordinati);
+//      check if we are not divided from oponent
+        Set<Rebro> intersection = graph.getEdges(jumper.coordinati);
         Set<Rebro> oponentRebra = graph.getEdges(oponent.coordinati);
-
-        Set<Rebro> intersection = ourRebra;
         intersection.retainAll(oponentRebra);
 
-        if (!anyRebroIsValid(intersection)) {
+        Rebro joint;
+        Rebro rebroBehindOponent = null;
+        Placement ourPlacement;
+        if (intersection.size() == 1) {
+            joint = (Rebro) intersection.toArray()[0];
+            ourPlacement= joint.placement ;
+            oponentRebra.remove(joint);
+            for(Rebro r: oponentRebra) {
+                if ((r.getValid()) && (r.placement.equals(ourPlacement))) {
+                    rebroBehindOponent = r;
+                }
+            }
+        } else if (intersection.isEmpty()) {
             // No connection, we can't jump
+            return false;
+        } else {
+                System.err.println("ERROR, multiple intersections !");
+                // some error, we should not have more than one intersection
+                return false;
+        }
+
+        if (!joint.getValid()) {
+//          there is a wall between us, can't jump
+            return false;
+        }
+
+        Vershina target = null;
+// Are provided coordinates valid ?
+        Set<Rebro> notJoinedOponentaRebra = graph.getEdges(oponent.coordinati);
+        notJoinedOponentaRebra.remove(joint);
+        Vershina selectedTarget = getVershinaByXY(x,y);
+        for(Rebro r:notJoinedOponentaRebra) {
+            if (r.getValid()){
+                Set<Vershina> vertices = graph.getVertices(r);
+                vertices.remove(oponent.coordinati);
+                if ((!vertices.isEmpty()) && (vertices.contains(selectedTarget))) {
+                    target = selectedTarget;
+                    break;
+                }
+            }
+        }
+        if (target==null) {
             return false;
         }
 
 //      Check is available behind oponent
-        Placement placementOn;
-        if (jumper.x.equals(oponent.x)) {
-            placementOn = Placement.Vertical;
-        } else {
-            placementOn = Placement.Horizontal;
-        }
-
-        Rebro behindOponent = null;
-        Set<Rebro> noIntersectRebra = oponentRebra;
-        noIntersectRebra.removeAll(intersection);
-        for(Rebro r:noIntersectRebra) {
-            if (r.getValid() && r.placement.equals(placementOn)) {
-                behindOponent = r;
+        if (rebroBehindOponent!=null) {
+            if (graph.getVertices(rebroBehindOponent).contains(target)) {
+                //Move behind;
+                jumper.coordinati=target;
+                jumper.x = target.getX();
+                jumper.y = target.getY();
+                switchPlayer();
+                return true;
+            } else {
+                // Target is not behind oponent
+                return false;
             }
-        }
-        if (behindOponent==null) {
-            // No rebro behind.
-//            Check leftRight move
-            return false;
         } else {
-            //Move to point;
-
-            for(Object v: graph.getVertices(behindOponent)) {
-                Vershina vershina = (Vershina) v;
-                if (vershina.getX().equals(x) && vershina.getY().equals(y)) {
-                    jumper.coordinati=vershina;
-                    jumper.x = vershina.getX();
-                    jumper.y = vershina.getY();
-                    switchPlayer();
-                    return true;
-                }
-
-            }
+            //everything is checked move to target (left, right)
+            jumper.coordinati=target;
+            jumper.x = target.getX();
+            jumper.y = target.getY();
+            switchPlayer();
+            return true;
         }
-//        switchPlayer();
-        return false;
     }
 
     private Player getOtherPlayer(Player player) {
@@ -189,22 +210,13 @@ public class QuoridorGameLogic {
         }
     }
 
-    private Boolean anyRebroIsValid(Set<Rebro> rebra) {
-        for(Rebro r: rebra) {
-            if (r.getValid()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private Boolean movePlayer(Player player, Vershina where) {
         if (!checkMove(player, where)) {
             return false;
 //            "Dvizenije zaprischeno"
         }
         player.coordinati = where;
-        player.x = where.getX();;
+        player.x = where.getX();
         player.y = where.getY();
         switchPlayer();
         return true;
@@ -212,6 +224,9 @@ public class QuoridorGameLogic {
 
     private Boolean checkMove(Player player, Vershina where) {
         if (getOtherPlayer(player).coordinati.equals(where)) {
+            return false;
+        }
+        if (getCurrentPlayer().coordinati.equals(where)) {
             return false;
         }
         Set<Rebro> rebra = graph.getEdges(player.coordinati);
@@ -225,11 +240,15 @@ public class QuoridorGameLogic {
     }
 
     public Boolean placeWall(Integer x, Integer y, Placement placement ) {
+        if (currentPlayer.wallCountLeft<=0 || !isGameStarted()) {
+            return false;
+        }
 
 // checks: must place 2 walls, place is available, path is possible
-        if (IsWallValid(x,y,placement)) {
+        if (IsWallValid(x,y,placement) && (isPathOpen(x,y,placement))) {
                 wallMatrix[x][y] = placement;
                 updateGraphWithWall(x,y,placement);
+                currentPlayer.wallCountLeft--;
                 switchPlayer();
                 return true;
 //
@@ -241,6 +260,11 @@ public class QuoridorGameLogic {
         }
 
 
+    }
+
+    private boolean isPathOpen(Integer x, Integer y, Placement placement) {
+        //
+        return true;
     }
 
     private void updateGraphWithWall(Integer x, Integer y, Placement placement) {
@@ -262,7 +286,7 @@ public class QuoridorGameLogic {
         rebra.addAll(graph.getEdges(v4));
         for (Rebro rebro: rebra) {
 
-            Boolean rebroIsValid = true;
+            boolean rebroIsValid = true;
             for(Object obj: graph.getVertices(rebro)) {
                 Vershina vershina = (Vershina) obj;
                 rebroIsValid = vershini.contains(vershina);
@@ -312,10 +336,7 @@ public class QuoridorGameLogic {
             result = true;
         }
         if ((result) && (y<MATRIX_SIZE_Y-2)) {
-            result = false;
-            if ((wallMatrix[x][y+1]==null) || (wallMatrix[x][y+1].equals(Placement.Horizontal))) {
-                result = true;
-            }
+            result = (wallMatrix[x][y + 1] == null) || (wallMatrix[x][y + 1].equals(Placement.Horizontal));
 
         }
 
@@ -333,10 +354,7 @@ public class QuoridorGameLogic {
             result = true;
         }
         if ((result) && (x<MATRIX_SIZE_X-2)) {
-            result = false;
-            if ((wallMatrix[x+1][y]==null) || (wallMatrix[x+1][y].equals(Placement.Vertical))) {
-                result = true;
-            }
+            result = (wallMatrix[x + 1][y] == null) || (wallMatrix[x + 1][y].equals(Placement.Vertical));
 
         }
 
@@ -407,6 +425,18 @@ public class QuoridorGameLogic {
         return whitePlayer;
     }
 
+    public Player getWinner() {
+        if (whitePlayer.getY()>=MATRIX_SIZE_Y-1) {
+            gameStarted=false;
+            return whitePlayer;
+        } else if (blackPlayer.getY().equals(0)) {
+            gameStarted=false;
+            return blackPlayer;
+        } else {
+            return null;
+        }
+    }
+
     public MutableGraph getGraph() {
         return graph;
     }
@@ -416,6 +446,9 @@ public class QuoridorGameLogic {
     }
 
     private void switchPlayer() {
+        if (getWinner()!=null) {
+            return;
+        }
         currentPlayer.moveCount++;
         if (currentPlayer.equals(blackPlayer)) {
             currentPlayer = whitePlayer;

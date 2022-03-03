@@ -1,6 +1,6 @@
 package com.asaulyuk.model;
 
-public class Player implements Moving {
+public class Player {
 
     public enum PlayerColor {
         BLACK,
@@ -13,54 +13,13 @@ public class Player implements Moving {
     Integer x;
     Integer y;
     Vershina coordinati;
+    Integer wallCountLeft;
 
     public Player(String name, PlayerColor playerColor) {
         this.name = name;
         this.playerColor = playerColor;
         this.moveCount=0;
-    }
-
-    public void newCoordinate(Integer xCoordinate, Integer yCoordinate) {
-        this.x = xCoordinate;
-        this.y = yCoordinate;
-        this.moveCount=0;
-    }
-
-    @Override
-    public void moveUp() {
-        if (y<9) {
-            this.moveCount++;
-            y = y + 1;
-        }
-    }
-
-    @Override
-    public void moveDown() {
-        if (y>1) {
-            this.moveCount++;
-            y = y - 1;
-        }
-    }
-
-    @Override
-    public void moveLeft() {
-        if (x>1) {
-            this.moveCount++;
-            x = x - 1;
-        }
-    }
-
-    @Override
-    public void moveRight() {
-        if (x<9) {
-            this.moveCount++;
-            x = x + 1;
-        }
-    }
-
-    @Override
-    public Integer getMoveCount() {
-        return this.moveCount;
+        this.wallCountLeft=10;
     }
 
     public Integer getX() {
@@ -69,5 +28,9 @@ public class Player implements Moving {
 
     public Integer getY() {
         return y;
+    }
+
+    public Integer getWallCountLeft() {
+        return wallCountLeft;
     }
 }

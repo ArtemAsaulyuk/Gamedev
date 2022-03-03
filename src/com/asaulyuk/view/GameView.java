@@ -1,7 +1,6 @@
 package com.asaulyuk.view;
 
 import com.asaulyuk.controller.GameController;
-import com.asaulyuk.model.Player;
 import com.asaulyuk.model.QuoridorGameLogic;
 
 import javax.swing.*;
@@ -11,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import static javax.swing.JOptionPane.DEFAULT_OPTION;
+import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
 import static javax.swing.JOptionPane.QUESTION_MESSAGE;
 
 public class GameView implements MouseListener {
@@ -22,7 +22,6 @@ public class GameView implements MouseListener {
     OurJPanel fieldPanel;
 
     public GameView(QuoridorGameLogic gameLogic) {
-        this.gameLogic = gameLogic;
         this.gameLogic = gameLogic;
     }
 
@@ -66,20 +65,12 @@ public class GameView implements MouseListener {
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
         JPanel leftCoord = new JPanel();
         leftCoord.setLayout(new GridLayout(QuoridorGameLogic.MATRIX_SIZE_Y, 1));
-        for(Integer i=1; i< QuoridorGameLogic.MATRIX_SIZE_Y+1; i++) {
-            leftCoord.add(new JLabel(" "+i.toString(), SwingConstants.CENTER));
+        for(int i = 1; i< QuoridorGameLogic.MATRIX_SIZE_Y+1; i++) {
+            leftCoord.add(new JLabel(" "+ i, SwingConstants.CENTER));
         }
         frame.add(leftCoord, BorderLayout.WEST);
         frame.add(fieldPanel );
         frame.setVisible(true);
-
-    }
-
-    private Button buildPlayer(Player player) {
-        String color = player.playerColor.equals(Player.PlayerColor.WHITE) ? "white" : "black";
-        Button button = new Button(color);
-        button.setLocation(player.getX()*10, player.getY()*10);
-        return button;
 
     }
 
@@ -97,8 +88,8 @@ public class GameView implements MouseListener {
     public void refreshInfo() {
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
         fieldPanel.setWallMatrix(gameLogic.getWallMatrix());
-        whiteInfo.setText("X="+gameLogic.getWhitePlayer().getX()+" Y="+gameLogic.getWhitePlayer().getY());
-        blackInfo.setText("X="+gameLogic.getBlackPlayer().getX()+" Y="+gameLogic.getBlackPlayer().getY());
+        whiteInfo.setText(" W:"+gameLogic.getWhitePlayer().getWallCountLeft()+" X="+gameLogic.getWhitePlayer().getX()+" Y="+gameLogic.getWhitePlayer().getY());
+        blackInfo.setText(" W:"+gameLogic.getBlackPlayer().getWallCountLeft()+" X="+gameLogic.getBlackPlayer().getX()+" Y="+gameLogic.getBlackPlayer().getY());
         this.fieldPanel.repaint();
     }
 
@@ -115,18 +106,17 @@ public class GameView implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        System.out.println(e.getX() + " " + e.getY());
+        //System.out.println(e.getX() + " " + e.getY());
         ViewSupportData data = fieldPanel.calculateWallEdgeCoordinates(e.getX(), e.getY());
-        System.out.println(data.selectedType+" x:"+data.x+" y:"+data.y);
+        //System.out.println(data.selectedType+" x:"+data.x+" y:"+data.y);
 
         ActionEvent event;
         if (data.selectedType.equals(ViewSupportData.BoxType.CELL)) {
             event = new ActionEvent(data, ActionEvent.ACTION_FIRST, GameController.MOVE_COMMAND);
-            gameController.actionPerformed(event);
         } else {
             event = new ActionEvent(data, ActionEvent.ACTION_FIRST, GameController.WALL_COMMAND);
-            gameController.actionPerformed(event);
         }
+        gameController.actionPerformed(event);
 
 
     }
@@ -149,5 +139,9 @@ public class GameView implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
 
+    }
+
+    public void congratulateWinner(String name) {
+        JOptionPane.showMessageDialog(frame,name +" Player WIN","Winner defined !",INFORMATION_MESSAGE);
     }
 }
