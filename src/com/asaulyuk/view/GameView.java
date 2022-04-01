@@ -29,14 +29,14 @@ public class GameView implements MouseListener {
         this.gameController = gameController;
     }
 
-    public void initialize(){
+    public void initialize() {
         frame = new JFrame();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(new Dimension(480,550));
+        frame.setSize(new Dimension(480, 550));
         frame.setResizable(false);
-        JPanel topPanel = new JPanel(new GridLayout(1,5));
+        JPanel topPanel = new JPanel(new GridLayout(1, 5));
         JButton starGameButton = new JButton("Start Game");
-        starGameButton.setBackground(Color.BLUE);
+        starGameButton.setBackground(Color.RED);
         starGameButton.addActionListener(gameController);
         starGameButton.setActionCommand(GameController.START_GAME);
         topPanel.add(new JLabel("Red:"));
@@ -49,13 +49,13 @@ public class GameView implements MouseListener {
         frame.setTitle("Quoridor by Asaulyuk");
         this.buildField();
 
-//        frame.add(topPanel, BorderLayout.PAGE_START);
+        //        frame.add(topPanel, BorderLayout.PAGE_START);
         JPanel pageStartPanel = new JPanel();
-        pageStartPanel.setLayout(new GridLayout(2,1));
+        pageStartPanel.setLayout(new GridLayout(2, 1));
         JPanel topCoord = new JPanel();
-        topCoord.setLayout(new GridLayout(1,9));
-        for (int i=65; i< 65 + QuoridorGameLogic.MATRIX_SIZE_X; i++) {
-            topCoord.add(new JLabel(Character.toString((char)i), SwingConstants.CENTER));
+        topCoord.setLayout(new GridLayout(1, 9));
+        for (int i = 65; i < 65 + QuoridorGameLogic.MATRIX_SIZE_X; i++) {
+            topCoord.add(new JLabel(Character.toString((char) i), SwingConstants.CENTER));
         }
         pageStartPanel.add(topPanel);
         pageStartPanel.add(topCoord);
@@ -65,11 +65,11 @@ public class GameView implements MouseListener {
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
         JPanel leftCoord = new JPanel();
         leftCoord.setLayout(new GridLayout(QuoridorGameLogic.MATRIX_SIZE_Y, 1));
-        for(int i = 1; i< QuoridorGameLogic.MATRIX_SIZE_Y+1; i++) {
-            leftCoord.add(new JLabel(" "+ i, SwingConstants.CENTER));
+        for (int i = 1; i < QuoridorGameLogic.MATRIX_SIZE_Y + 1; i++) {
+            leftCoord.add(new JLabel(" " + i, SwingConstants.CENTER));
         }
         frame.add(leftCoord, BorderLayout.WEST);
-        frame.add(fieldPanel );
+        frame.add(fieldPanel);
         frame.setVisible(true);
 
     }
@@ -80,7 +80,7 @@ public class GameView implements MouseListener {
                 QuoridorGameLogic.MATRIX_SIZE_X,
                 QuoridorGameLogic.MATRIX_SIZE_Y,
                 gameLogic.getWallMatrix());
-//        gameLogic.getWallMatrix().length
+        //        gameLogic.getWallMatrix().length
 
 
     }
@@ -88,24 +88,24 @@ public class GameView implements MouseListener {
     public void refreshInfo() {
         fieldPanel.setCurrentPlayer(gameLogic.getCurrentPlayer());
         fieldPanel.setWallMatrix(gameLogic.getWallMatrix());
-        whiteInfo.setText(" W:"+gameLogic.getWhitePlayer().getWallCountLeft()+" X="+gameLogic.getWhitePlayer().getX()+" Y="+gameLogic.getWhitePlayer().getY());
-        blackInfo.setText(" W:"+gameLogic.getBlackPlayer().getWallCountLeft()+" X="+gameLogic.getBlackPlayer().getX()+" Y="+gameLogic.getBlackPlayer().getY());
+        whiteInfo.setText(" W:" + gameLogic.getWhitePlayer().getWallCountLeft() + " X=" + gameLogic.getWhitePlayer().getX() + " Y=" + gameLogic.getWhitePlayer().getY());
+        blackInfo.setText(" W:" + gameLogic.getBlackPlayer().getWallCountLeft() + " X=" + gameLogic.getBlackPlayer().getX() + " Y=" + gameLogic.getBlackPlayer().getY());
         this.fieldPanel.repaint();
     }
 
     public int choseColor() {
-        String[] options = {"Red","Green"};
-        return JOptionPane.showOptionDialog(frame,"Chose your color","Chose color",DEFAULT_OPTION, QUESTION_MESSAGE, null, options, 0);
+        String[] options = {"Red", "Green"};
+        return JOptionPane.showOptionDialog(frame, "Chose your color", "Chose color", DEFAULT_OPTION, QUESTION_MESSAGE, null, options, 0);
     }
 
     public int choseMode() {
-        String[] options = {"One player","Two players"};
-        return JOptionPane.showOptionDialog(frame,"Chose number of players","Mode",DEFAULT_OPTION, QUESTION_MESSAGE, null, options, 0);
+        String[] options = {"One player", "Two players"};
+        return JOptionPane.showOptionDialog(frame, "Chose number of players", "Mode", DEFAULT_OPTION, QUESTION_MESSAGE, null, options, 0);
     }
 
 
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
         //System.out.println(e.getX() + " " + e.getY());
         ViewSupportData data = fieldPanel.calculateWallEdgeCoordinates(e.getX(), e.getY());
         //System.out.println(data.selectedType+" x:"+data.x+" y:"+data.y);
@@ -127,7 +127,7 @@ public class GameView implements MouseListener {
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
 
     }
 
@@ -142,6 +142,6 @@ public class GameView implements MouseListener {
     }
 
     public void congratulateWinner(String name) {
-        JOptionPane.showMessageDialog(frame,name +" Player WIN","Winner defined !",INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, name + " Player WIN", "Winner defined !", INFORMATION_MESSAGE);
     }
 }

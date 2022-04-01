@@ -125,7 +125,7 @@ public class OurJPanel extends JPanel {
                 return new ViewSupportData(lastProcessedVerticalEdgeIndex, horizontalEdgeIndex, ViewSupportData.BoxType.WALL_HORIZONTAL);
             }
         } else {
-        //  cell was selected
+            //  cell was selected
             return new ViewSupportData(lastProcessedVerticalEdgeIndex, lastProcessedHorizontalEdgeIndex, ViewSupportData.BoxType.CELL);
         }
 

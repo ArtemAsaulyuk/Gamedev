@@ -2,11 +2,8 @@ package com.asaulyuk.controller;
 
 import com.asaulyuk.model.Placement;
 import com.asaulyuk.model.QuoridorGameLogic;
-import com.asaulyuk.model.Vershina;
 
-import java.security.SecureRandom;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class PcPlayerController {
 
@@ -16,20 +13,21 @@ public class PcPlayerController {
 
     private QuoridorGameLogic gameLogic;
     private Random random = new Random();
-    public boolean doNextMove(){
+
+    public boolean doNextMove() {
         if (!gameLogic.isGameStarted()) {
             return false;
         }
         int command = random.nextInt(4);
-        if ((command == 0) && (gameLogic.getCurrentPlayer().getWallCountLeft()>0)) {
+        if ((command == 0) && (gameLogic.getCurrentPlayer().getWallCountLeft() > 0)) {
             // wall
             boolean wallPlaced = false;
             while (!wallPlaced) {
-                int x = random.nextInt(QuoridorGameLogic.MATRIX_SIZE_X-1);
-                int y = random.nextInt(QuoridorGameLogic.MATRIX_SIZE_Y-1);
+                int x = random.nextInt(QuoridorGameLogic.MATRIX_SIZE_X - 1);
+                int y = random.nextInt(QuoridorGameLogic.MATRIX_SIZE_Y - 1);
                 int p = random.nextInt(2);
-                wallPlaced = gameLogic.placeWall(x,y,p==0 ? Placement.Horizontal : Placement.Vertical);
-                System.out.println("wall("+x+","+y+","+p+") "+wallPlaced);
+                wallPlaced = gameLogic.placeWall(x, y, p == 0 ? Placement.Horizontal : Placement.Vertical);
+                System.out.println("wall(" + x + "," + y + "," + p + ") " + wallPlaced);
             }
         } else {
             boolean moveSuccessfull = false;
@@ -38,18 +36,18 @@ public class PcPlayerController {
             while (!moveSuccessfull) {
                 int p = random.nextInt(2);
                 int d = random.nextInt(3);
-                if (d==2) {
-                    d=-1;
+                if (d == 2) {
+                    d = -1;
                 }
-                if (p==0) {
-                    x = gameLogic.getCurrentPlayer().getX()+d;
+                if (p == 0) {
+                    x = gameLogic.getCurrentPlayer().getX() + d;
                     y = gameLogic.getCurrentPlayer().getY();
                 } else {
                     x = gameLogic.getCurrentPlayer().getX();
-                    y=gameLogic.getCurrentPlayer().getY()+d;
+                    y = gameLogic.getCurrentPlayer().getY() + d;
                 }
-                moveSuccessfull = gameLogic.move(x,y);
-                System.out.println("move("+x+","+y+") "+moveSuccessfull);
+                moveSuccessfull = gameLogic.move(x, y);
+                System.out.println("move(" + x + "," + y + ") " + moveSuccessfull);
             }
         }
         return true;

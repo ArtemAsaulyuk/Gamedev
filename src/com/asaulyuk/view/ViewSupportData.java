@@ -6,6 +6,7 @@ public class ViewSupportData {
         WALL_VERTICAL,
         CELL
     }
+
     public static class Box {
         public Integer x;
         public Integer y;
