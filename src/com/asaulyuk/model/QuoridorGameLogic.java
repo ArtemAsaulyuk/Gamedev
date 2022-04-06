@@ -269,19 +269,31 @@ public class QuoridorGameLogic {
 
     private boolean isPathOpen(Integer x, Integer y, Placement placement) {
         UndirectedGraphImpl tempGraph = copyGraphWithRecreatedRebra(graph);
-        Vershina topV = new Vershina(-1, -1);
+
         Vershina bottomV = new Vershina(100, 100);
-        tempGraph.addVertex(topV);
         tempGraph.addVertex(bottomV);
-        Vershina[] top = getHorizontalArrayOfVershina(0);
         Vershina[] bottom = getHorizontalArrayOfVershina(MATRIX_SIZE_Y - 1);
         for (int i = 0; i < MATRIX_SIZE_X; i++) {
-            tempGraph.addEdge(new Rebro("", Placement.Vertical), new HashSet(Arrays.asList(top[i], topV)));
             tempGraph.addEdge(new Rebro("", Placement.Vertical), new HashSet(Arrays.asList(bottom[i], bottomV)));
         }
         updateGraphWithWall(tempGraph, x, y, placement);
 
-        return checkConnections(tempGraph, bottomV, whitePlayer.coordinati, 1) && checkConnections(tempGraph, topV, blackPlayer.coordinati, -1);
+        boolean result = checkConnections(tempGraph, bottomV, whitePlayer.coordinati, 1);
+        if (!result) {
+            return false;
+        }
+
+        Vershina topV = new Vershina(-1, -1);
+        tempGraph = copyGraphWithRecreatedRebra(graph);
+        tempGraph.addVertex(topV);
+        Vershina[] top = getHorizontalArrayOfVershina(0);
+        for (int i = 0; i < MATRIX_SIZE_X; i++) {
+            tempGraph.addEdge(new Rebro("", Placement.Vertical), new HashSet(Arrays.asList(top[i], topV)));
+        }
+        updateGraphWithWall(tempGraph, x, y, placement);
+
+
+        return  checkConnections(tempGraph, topV, blackPlayer.coordinati, -1);
     }
 
     private UndirectedGraphImpl copyGraphWithRecreatedRebra(MutableGraph localGraph) {
